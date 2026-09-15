@@ -1,0 +1,41 @@
+# ---- Vivado ----
+hw/build/
+hw/export/
+.Xil/
+*.jou
+*.log
+*.str
+*.backup.*
+vivado_pid*.zip
+
+# ---- Vitis (only the application sources are tracked) ----
+**/workspace/
+.metadata/
+_ide/
+.analytics
+RemoteSystemsTempFiles/
+Debug/
+Release/
+build/
+*.elf
+*.elf.size
+*.o
+*.obj
+*.d
+*.map
+
+# ---- boot images ----
+BOOT.BIN
+
+# ---- host test and simulation binaries ----
+sw/*/tests/host/test_*
+!sw/*/tests/host/test_*.c
+sw/*/tests/host/sim_*
+!sw/*/tests/host/sim_*.c
+*.exe
+
+# ---- editors / OS ----
+.vscode/
+*.swp
+Thumbs.db
+desktop.ini
