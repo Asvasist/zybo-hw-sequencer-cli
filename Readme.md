@@ -24,7 +24,7 @@ Firmware first, on the PS alone. The PL design comes in when the AXI Timer does.
 | Stage | Scope | Folder | Status |
 |-------|-------|--------|--------|
 | 1 | Interrupt-driven UART RX, line queue, command parser | `sw/stage1_uart_parser` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
-| 2 | Hardware abstraction layer (`HAL_SetLED()` and friends) | | Planned |
+| 2 | Hardware abstraction layer: LEDs and die temperature behind `HAL_SetLED()` and friends | `sw/stage2_hal` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
 | 3 | Non-blocking sequencer FSM, interrupt-driven UART TX | | Planned |
 | 4 | PL design with AXI Timer, command-to-hardware latency in µs | `hw/` | Planned |
 
@@ -32,18 +32,19 @@ Each stage has its own Readme covering the design, the build steps, the tests
 and a bring-up checklist. Stage folders are kept as they were when completed,
 so each step can be built and read on its own.
 
-## Quick start (stage 1)
+## Quick start (stage 2, the latest)
 
-1. **XSA.** Any Zybo / Zybo Z7 hardware export with the board preset. Stage 1
-   uses only PS UART1. The stage 1 Readme lists the five Vivado steps to make one.
+1. **XSA.** Any Zybo / Zybo Z7 hardware export with the board preset. Stage 2
+   uses PS UART1, MIO7 and the XADC, all reachable without a bitstream. The
+   stage 1 Readme lists the five Vivado steps to make one.
 2. **Vitis 2025.2.** Create a standalone platform for `ps7_cortexa9_0`, then an
    empty application on it.
-3. **Sources.** Copy the `.c`/`.h` files from `sw/stage1_uart_parser/src` into
-   the application's `src/` folder, build, and run. Open a terminal at 115200
-   8N1 and type `HELP`.
+3. **Sources.** Copy the `.c`/`.h` files from `sw/stage2_hal/src` into the
+   application's `src/` folder, build, and run. Open a terminal at 115200 8N1,
+   type `HELP`, then `LED_SET 0 1` to light LD4.
 
-No board yet? `sw/stage1_uart_parser/tests/host/sim_session.c` runs the same
-firmware on a PC against a model of the UART.
+No board yet? `sw/stage2_hal/tests/host/sim_session.c` runs the same firmware
+on a PC against models of the UART and the board.
 
 ## Repository layout
 
@@ -60,6 +61,19 @@ sw/
       test_uart_driver.c driver unit tests against the UART model
       sim_session.c      whole firmware on a PC with a scripted session
       mock/              host stand-ins for the Xilinx headers + register model
+  stage2_hal/
+    Readme.md            layers, the HAL, build and run, tests, bring-up checklist
+    src/
+      main.c             application: commands and formatting, no register access
+      hal.h/.c           the abstraction: LED map, LED control, temperature
+      gpio_drv.h/.c      PS MIO GPIO driver (XGpioPs)
+      xadc_drv.h/.c      die temperature driver (XAdcPs)
+      uart_driver.h/.c   console UART, carried forward from stage 1
+      parser.h/.c        command parser, carried forward from stage 1
+      board_zybo.h       the only board-specific file
+    tests/host/
+      test_hal.c         HAL and driver tests against a model of the board
+      ...                the stage 1 suites, the simulator and the mocks
 ```
 
 Vitis 2025.2 compiles only the sources that sit directly in an application's
