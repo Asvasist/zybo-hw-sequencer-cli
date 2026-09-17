@@ -25,26 +25,27 @@ Firmware first, on the PS alone. The PL design comes in when the AXI Timer does.
 |-------|-------|--------|--------|
 | 1 | Interrupt-driven UART RX, line queue, command parser | `sw/stage1_uart_parser` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
 | 2 | Hardware abstraction layer: LEDs and die temperature behind `HAL_SetLED()` and friends | `sw/stage2_hal` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
-| 3 | Non-blocking sequencer FSM, interrupt-driven UART TX | | Planned |
+| 3 | Non-blocking sequencer FSM, interrupt-driven UART TX | `sw/stage3_sequencer_fsm` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
 | 4 | PL design with AXI Timer, command-to-hardware latency in µs | `hw/` | Planned |
 
 Each stage has its own Readme covering the design, the build steps, the tests
 and a bring-up checklist. Stage folders are kept as they were when completed,
 so each step can be built and read on its own.
 
-## Quick start (stage 2, the latest)
+## Quick start (stage 3, the latest)
 
-1. **XSA.** Any Zybo / Zybo Z7 hardware export with the board preset. Stage 2
-   uses PS UART1, MIO7 and the XADC, all reachable without a bitstream. The
-   stage 1 Readme lists the five Vivado steps to make one.
+1. **XSA.** Any Zybo / Zybo Z7 hardware export with the board preset. Stage 3
+   uses PS UART1, MIO7, the XADC and the Cortex-A9 global timer, all reachable
+   without a bitstream. The stage 1 Readme lists the five Vivado steps to make one.
 2. **Vitis 2025.2.** Create a standalone platform for `ps7_cortexa9_0`, then an
    empty application on it.
-3. **Sources.** Copy the `.c`/`.h` files from `sw/stage2_hal/src` into the
-   application's `src/` folder, build, and run. Open a terminal at 115200 8N1,
-   type `HELP`, then `LED_SET 0 1` to light LD4.
+3. **Sources.** Copy the `.c`/`.h` files from `sw/stage3_sequencer_fsm/src`
+   into the application's `src/` folder, build, and run. Open a terminal at
+   115200 8N1, type `HELP`, then `LED_BLINK 10000 250` - and keep typing
+   commands while LD4 blinks.
 
-No board yet? `sw/stage2_hal/tests/host/sim_session.c` runs the same firmware
-on a PC against models of the UART and the board.
+No board yet? `sw/stage3_sequencer_fsm/tests/host/sim_session.c` runs the same
+firmware on a PC against models of the UART, the board and the clock.
 
 ## Repository layout
 
@@ -74,6 +75,18 @@ sw/
     tests/host/
       test_hal.c         HAL and driver tests against a model of the board
       ...                the stage 1 suites, the simulator and the mocks
+  stage3_sequencer_fsm/
+    Readme.md            the state machine, interrupt-driven transmit, tests
+    src/
+      main.c             application: commands, formatting, the super-loop
+      sequencer.h/.c     the switch-case state machine and its schedule
+      uptime_drv.h/.c    milliseconds since boot (Cortex-A9 global timer)
+      hal.h/.c           LEDs, temperature, time
+      uart_driver.h/.c   receive ISR and line queue, transmit ring and ISR
+      ...                the drivers and the parser, carried forward
+    tests/host/
+      test_sequencer.c   the state machine through simulated time
+      ...                the earlier suites, the simulator and the mocks
 ```
 
 Vitis 2025.2 compiles only the sources that sit directly in an application's
