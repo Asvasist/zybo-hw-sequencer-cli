@@ -1,12 +1,14 @@
 # ---- Vivado ----
+# hw/build/ is the throwaway project; hw/export/*.xsa is tracked on purpose,
+# it is what lets someone run the project without installing Vivado.
 hw/build/
-hw/export/
 .Xil/
 *.jou
 *.log
 *.str
 *.backup.*
 vivado_pid*.zip
+dfx_runtime.txt
 
 # ---- Vitis (only the application sources are tracked) ----
 **/workspace/

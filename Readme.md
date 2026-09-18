@@ -19,14 +19,15 @@ What it covers:
 
 ## Stages
 
-Firmware first, on the PS alone. The PL design comes in when the AXI Timer does.
+Firmware first, on the PS alone. The PL design arrives with the AXI Timer, and
+its exported `.xsa` is committed, so the repository is enough on its own.
 
 | Stage | Scope | Folder | Status |
 |-------|-------|--------|--------|
 | 1 | Interrupt-driven UART RX, line queue, command parser | `sw/stage1_uart_parser` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
 | 2 | Hardware abstraction layer: LEDs and die temperature behind `HAL_SetLED()` and friends | `sw/stage2_hal` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
 | 3 | Non-blocking sequencer FSM, interrupt-driven UART TX | `sw/stage3_sequencer_fsm` | Code complete, builds against the 2025.2 BSP, host tests pass, board run pending |
-| 4 | PL design with AXI Timer, command-to-hardware latency in µs | `hw/` | Planned |
+| 4 | PL design: AXI Timer and AXI GPIO for the PL LEDs, exported XSA | `hw/` | Hardware built and exported (timing met); the firmware that uses it is next |
 
 Each stage has its own Readme covering the design, the build steps, the tests
 and a bring-up checklist. Stage folders are kept as they were when completed,
@@ -34,9 +35,10 @@ so each step can be built and read on its own.
 
 ## Quick start (stage 3, the latest)
 
-1. **XSA.** Any Zybo / Zybo Z7 hardware export with the board preset. Stage 3
-   uses PS UART1, MIO7, the XADC and the Cortex-A9 global timer, all reachable
-   without a bitstream. The stage 1 Readme lists the five Vivado steps to make one.
+1. **XSA.** Use the one in the repository: `hw/export/zybo_seq_hw.xsa`, built
+   for the Zybo Z7-20 with the bitstream inside. No Vivado needed. Another
+   board, or a change to the PL: `hw/Readme.md` has the script and the
+   click-by-click steps.
 2. **Vitis 2025.2.** Create a standalone platform for `ps7_cortexa9_0`, then an
    empty application on it.
 3. **Sources.** Copy the `.c`/`.h` files from `sw/stage3_sequencer_fsm/src`
@@ -50,6 +52,11 @@ firmware on a PC against models of the UART, the board and the clock.
 ## Repository layout
 
 ```
+hw/
+  Readme.md            what the PL design contains, how to rebuild it, how to use the XSA
+  scripts/             Vivado script that builds the design and exports the XSA
+  src/constraints/     the PL LED pins
+  export/              the exported .xsa, bitstream included - tracked on purpose
 sw/
   stage1_uart_parser/
     Readme.md            design, build and run, tests, bring-up checklist

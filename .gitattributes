@@ -2,3 +2,8 @@
 * text=auto
 *.tcl text eol=lf
 *.sh text eol=lf
+
+# Hardware handoff and bitstreams are archives: never touch their bytes
+*.xsa binary
+*.bit binary
+*.bin binary
